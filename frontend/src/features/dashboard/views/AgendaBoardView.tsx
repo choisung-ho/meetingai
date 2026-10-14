@@ -221,7 +221,7 @@ export const AgendaBoardView: React.FC<AgendaBoardViewProps> = ({
     const payload = getIssuePayload(firstIssue);
     if (payload && requestedIssueKeyRef.current !== firstKey) {
       requestedIssueKeyRef.current = firstKey;
-      console.log('[GET_ISSUE:AUTO_SELECT_FIRST]', payload.issueId);
+
       actions?.getIssue(payload);
       actions?.getIssueEvents(payload);
     }

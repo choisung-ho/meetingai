@@ -707,7 +707,7 @@ export function useSocket({
       };
 
       setIsIssueEventsLoading(true);
-      console.log("[GET_ISSUE_EVENTS:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] GET_ISSUE_EVENTS");
       sendSocketMessage(socketRef.current, message);
     },
@@ -1020,11 +1020,7 @@ export function useSocket({
         }
 
         case "JOIN_WORKSPACE_ACK": {
-          console.log("[RECEIVE] JOIN_WORKSPACE_ACK", {
-            workspaceId: message.payload.workspaceId,
-            requestId: message.requestId,
-            success: message.success,
-          });
+
 
           const responseWorkspaceId = Number(message.payload.workspaceId);
           const pendingWorkspace = pendingJoinWorkspaceRef.current;
@@ -1107,7 +1103,7 @@ export function useSocket({
         }
 
         case "WORKSPACE_USERS_UPDATED": {
-          console.log("[BROADCAST] WORKSPACE_USERS_UPDATED", message.payload);
+
 
           const incomingWorkspaceId = Number(message.payload.workspaceId);
           const currentWorkspaceId =
@@ -1140,16 +1136,12 @@ export function useSocket({
           setWorkspaceUsers(message.payload.users);
           setWorkspaceUpdatedAt(message.payload.updatedAt);
           setWorkspaceErrorMessage(null);
-          console.log("[BROADCAST] WORKSPACE_USERS_UPDATED applied", {
-            workspaceId: incomingWorkspaceId,
-            userCount: message.payload.users.length,
-            updatedAt: message.payload.updatedAt,
-          });
+
           break;
         }
 
         case "GET_MEETING_ACK": {
-          console.log("[GET_MEETING_ACK:RECEIVED]", message.payload);
+
 
           const responseWorkspaceId = Number(message.payload.workspaceId);
           const pendingMeeting = pendingGetMeetingRef.current;
@@ -1403,12 +1395,7 @@ export function useSocket({
             useWorkspacePresenceStore.getState().workspaceId;
 
           console.log("[RECEIVE] GET_ALL_ISSUES_ACK");
-          console.log("[GET_ALL_ISSUES_ACK:DEBUG]", {
-            count: allIssues.length,
-            sample: allIssues[0] ?? null,
-            payloadWorkspaceId: responseWorkspaceId,
-            pendingWorkspaceId: pendingIssues?.workspaceId ?? null,
-          });
+
 
           if (
             pendingIssues &&
@@ -1548,7 +1535,7 @@ export function useSocket({
           }
 
           setSelectedIssueDetail(message.payload);
-          console.log("[GET_ISSUE_ACK:SAVED]", message.payload);
+
           break;
         }
 
@@ -1654,7 +1641,7 @@ export function useSocket({
           setAlertDetail(message.payload);
           setSelectedAlertId(Number(message.payload.id));
           setAlertDetailErrorMessage(null);
-          console.log("[GET_ALERT_ACK:SAVED]", message.payload);
+
           break;
         }
 
@@ -1690,7 +1677,7 @@ export function useSocket({
 
           mergeAlert(message.payload);
           setAcknowledgeAlertErrorMessage(null);
-          console.log("[ACKNOWLEDGE_ALERT_ACK:SAVED]", message.payload);
+
           break;
         }
 
@@ -1726,7 +1713,7 @@ export function useSocket({
 
           mergeAlert(message.payload);
           setDismissAlertErrorMessage(null);
-          console.log("[DISMISS_ALERT_ACK:SAVED]", message.payload);
+
           break;
         }
 
@@ -1762,7 +1749,7 @@ export function useSocket({
 
           mergeAlert(message.payload);
           setResolveAlertErrorMessage(null);
-          console.log("[RESOLVE_ALERT_ACK:SAVED]", message.payload);
+
           break;
         }
 
@@ -1798,7 +1785,7 @@ export function useSocket({
 
           mergeAlert(message.payload);
           setUpdateAlertErrorMessage(null);
-          console.log("[UPDATE_ALERT_ACK:SAVED]", message.payload);
+
           break;
         }
 
@@ -1834,7 +1821,7 @@ export function useSocket({
 
           removeAlert(Number(message.payload.alertId));
           setDeleteAlertErrorMessage(null);
-          console.log("[DELETE_ALERT_ACK:SAVED]", message.payload);
+
           break;
         }
 
@@ -1877,7 +1864,7 @@ export function useSocket({
           break;
         }
         case "ISSUE_CREATED": {
-          console.log("[ISSUE_CREATED:RECEIVED]", message.payload);
+
 
           const currentWorkspaceId = Number(
             useWorkspacePresenceStore.getState().workspaceId
@@ -1914,7 +1901,7 @@ export function useSocket({
               return prev;
             }
 
-            console.log("[ISSUE_CREATED:APPLIED]", message.payload.id);
+
             return [...prev, message.payload];
           });
 
@@ -1965,7 +1952,7 @@ export function useSocket({
         }
 
         case "ISSUE_UPDATED": {
-          console.log("[ISSUE_UPDATED:RECEIVED]", message.payload);
+
 
           const currentWorkspaceId = Number(
             useWorkspacePresenceStore.getState().workspaceId
@@ -2003,7 +1990,7 @@ export function useSocket({
               return prev;
             }
 
-            console.log("[ISSUE_UPDATED:APPLIED]", message.payload.id);
+
 
             return prev.map((issue) =>
               issue.id === message.payload.id ? message.payload : issue
@@ -2018,7 +2005,7 @@ export function useSocket({
         }
 
         case "ISSUE_STATE_CHANGED": {
-          console.log("[ISSUE_STATE_CHANGED:RECEIVED]", message.payload);
+
 
           const { issueId, toState, changedAt } = message.payload;
 
@@ -2091,7 +2078,7 @@ export function useSocket({
             status: String(message.payload.status ?? ""),
           };
 
-          console.log("[STT_RESULT_CREATED:RECEIVED]", payload);
+
           setLastCreatedSttResult(payload);
           if (
             payload.workspaceId > 0 &&
@@ -2111,17 +2098,14 @@ export function useSocket({
         case "STT_RESULT_UPDATED": {
           const payload = normalizeSttResult(message.payload);
 
-          console.log("[STT_RESULT_UPDATED:RECEIVED]", message.payload);
+
 
           if (!Number.isFinite(payload.id) || payload.id <= 0) {
             break;
           }
 
           applySttResultUpdated(payload);
-          console.log("[STT_RESULT_UPDATED:APPLIED]", {
-            id: payload.id,
-            updatedRawText: payload.rawText,
-          });
+
           break;
         }
 
@@ -2129,7 +2113,7 @@ export function useSocket({
           const payload = message.payload as SttResultDeletedPayload;
           const sttResultId = Number(payload.sttResultId);
 
-          console.log("[STT_RESULT_DELETED:RECEIVED]", payload);
+
 
           if (!payload.deleted || !Number.isFinite(sttResultId) || sttResultId <= 0) {
             break;
@@ -2169,10 +2153,7 @@ export function useSocket({
             pendingDocuments.meetingId,
             Array.isArray(message.payload.data) ? message.payload.data : []
           );
-          console.log("[GET_DOCUMENTS_ACK:SAVED]", {
-            meetingId: pendingDocuments.meetingId,
-            count: message.payload.data?.length ?? 0,
-          });
+
           break;
         }
 
@@ -2203,10 +2184,7 @@ export function useSocket({
             pendingDocuments.workspaceId,
             Array.isArray(message.payload.data) ? message.payload.data : []
           );
-          console.log("[GET_WORKSPACE_DOCUMENTS_ACK:SAVED]", {
-            workspaceId: pendingDocuments.workspaceId,
-            count: message.payload.data?.length ?? 0,
-          });
+
           break;
         }
 
@@ -2283,7 +2261,7 @@ export function useSocket({
             break;
           }
 
-          console.log("[GET_STT_RESULTS_ACK:RECEIVED]", message.payload);
+
           pendingGetSttResultsRef.current = null;
 
           const payload = message.payload as {
@@ -2318,7 +2296,7 @@ export function useSocket({
         }
 
         case "GET_STT_RESULT_ACK": {
-          console.log("[GET_STT_RESULT_ACK:RECEIVED]", message.payload);
+
 
           if (message.success === false || !message.payload) {
             setSelectedSttResult(null);
@@ -2334,7 +2312,7 @@ export function useSocket({
         }
 
         case "DELETE_STT_RESULT_ACK": {
-          console.log("[DELETE_STT_RESULT_ACK:RECEIVED]", message.payload);
+
 
           if (!message.success || !message.payload?.deleted) {
             console.error("[DELETE_STT_RESULT_ACK:FAILED]", message.payload);
@@ -2413,12 +2391,7 @@ export function useSocket({
             !currentWorkspaceId ||
             deletedDocument.workspaceId !== Number(currentWorkspaceId)
           ) {
-            console.log("[DOCUMENT_DELETED:SKIP]", {
-              currentWorkspaceId,
-              payloadWorkspaceId: deletedDocument.workspaceId,
-              documentId: deletedDocument.documentId,
-              meetingId: deletedDocument.meetingId,
-            });
+
             break;
           }
 
@@ -2428,11 +2401,7 @@ export function useSocket({
               Number(deletedDocument.meetingId) !==
                 Number(currentMeetingContext?.meetingId)
             ) {
-              console.log("[DOCUMENT_DELETED:SKIP_MEETING_SCOPE]", {
-                currentMeetingId: currentMeetingContext?.meetingId ?? null,
-                payloadMeetingId: deletedDocument.meetingId,
-                documentId: deletedDocument.documentId,
-              });
+
               break;
             }
           }
@@ -2456,12 +2425,7 @@ export function useSocket({
             normalizedDocument.workspaceId == null ||
             Number(normalizedDocument.workspaceId) !== Number(currentWorkspaceId)
           ) {
-            console.log("[DOCUMENT_UPLOADED:SKIP]", {
-              currentWorkspaceId,
-              payloadWorkspaceId: normalizedDocument.workspaceId,
-              documentId: normalizedDocument.id,
-              meetingId: normalizedDocument.meetingId,
-            });
+
             break;
           }
 
@@ -2599,7 +2563,7 @@ export function useSocket({
         case "TOPIC_REVISITED":
         case "TOPIC_REDECIDED":
         case "TOPIC_UPDATED": {
-          console.log(`[BROADCAST] ${message.type}`, message.payload);
+
           useTranscriptStore
             .getState()
             .applyTopicEvent(message.type, message.payload);
@@ -2805,12 +2769,7 @@ export function useSocket({
           }
 
           if (isJoinWorkspaceError) {
-            console.log("[JOIN_WORKSPACE_ERROR]", {
-              workspaceId: pendingWorkspace?.workspaceId ?? null,
-              requestId,
-              currentWorkspaceId: useWorkspacePresenceStore.getState().workspaceId,
-              payload: message.payload,
-            });
+
           }
 
           if (
@@ -2982,13 +2941,7 @@ export function useSocket({
         meetingRoomId: finalPayload.meetingRoomId,
       };
       isCreateIssuePendingRef.current = true;
-      console.log("[CREATE_ISSUE:BEFORE_SEND]", {
-        workspaceId: finalPayload.workspaceId,
-        meetingId: finalPayload.meetingId,
-        meetingRoomId: finalPayload.meetingRoomId,
-        title: finalPayload.title,
-        status: finalPayload.status,
-      });
+
       console.log("[SEND] CREATE_ISSUE");
 
       sendSocketMessage(socketRef.current, message);
@@ -3041,7 +2994,7 @@ export function useSocket({
         payload: finalPayload,
       };
 
-      console.log("[GET_ISSUES:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] GET_ISSUES");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3079,7 +3032,7 @@ export function useSocket({
         payload: finalPayload,
       };
 
-      console.log("[GET_ALL_ISSUES:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] GET_ALL_ISSUES");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3127,7 +3080,7 @@ export function useSocket({
       };
 
       setIsIssueDetailLoading(true);
-      console.log("[GET_ISSUE:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] GET_ISSUE");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3189,7 +3142,7 @@ export function useSocket({
         payload: finalPayload,
       };
 
-      console.log("[GET_DOCUMENTS:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] GET_DOCUMENTS");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3235,7 +3188,7 @@ export function useSocket({
         payload,
       };
 
-      console.log("[GET_STT_RESULTS:BEFORE_SEND]", payload);
+
       sendSocketMessage(socketRef.current, message);
     },
     []
@@ -3288,7 +3241,7 @@ export function useSocket({
         payload,
       };
 
-      console.log("[GET_STT_RESULT:BEFORE_SEND]", payload);
+
       sendSocketMessage(socketRef.current, message);
     },
     []
@@ -3334,7 +3287,7 @@ export function useSocket({
         payload,
       };
 
-      console.log("[DELETE_STT_RESULT:BEFORE_SEND]", payload);
+
       sendSocketMessage(socketRef.current, message);
     },
     []
@@ -3378,7 +3331,7 @@ export function useSocket({
       payload: finalPayload,
     };
 
-    console.log("[GET_WORKSPACE_DOCUMENTS:BEFORE_SEND]", finalPayload);
+
     console.log("[SEND] GET_WORKSPACE_DOCUMENTS");
     sendSocketMessage(socketRef.current, message);
   }, []);
@@ -3440,7 +3393,7 @@ export function useSocket({
       payload: finalPayload,
     };
 
-    console.log("[GET_DOCUMENT:BEFORE_SEND]", finalPayload);
+
     console.log("[SEND] GET_DOCUMENT");
     sendSocketMessage(socketRef.current, message);
   }, []);
@@ -3508,7 +3461,7 @@ export function useSocket({
       payload: finalPayload,
     };
 
-    console.log("[DELETE_DOCUMENT:BEFORE_SEND]", finalPayload);
+
     console.log("[SEND] DELETE_DOCUMENT");
     sendSocketMessage(socketRef.current, message);
   }, []);
@@ -3577,7 +3530,7 @@ export function useSocket({
         setAlertErrorMessage("재논의 알림 목록 조회 응답이 지연되고 있습니다.");
       }, GET_ALERTS_TIMEOUT_MS);
 
-      console.log("[GET_ALERTS:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] GET_ALERTS");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3641,7 +3594,7 @@ export function useSocket({
         setAlertDetailErrorMessage("재논의 알림 상세 조회 응답이 지연되고 있습니다.");
       }, GET_ALERT_TIMEOUT_MS);
 
-      console.log("[GET_ALERT:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] GET_ALERT");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3702,7 +3655,7 @@ export function useSocket({
         setAcknowledgeAlertErrorMessage("알림 확인 완료 변경 응답이 지연되고 있습니다.");
       }, ACKNOWLEDGE_ALERT_TIMEOUT_MS);
 
-      console.log("[ACKNOWLEDGE_ALERT:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] ACKNOWLEDGE_ALERT");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3761,7 +3714,7 @@ export function useSocket({
         setDismissAlertErrorMessage("알림 무시 처리 응답이 지연되고 있습니다.");
       }, DISMISS_ALERT_TIMEOUT_MS);
 
-      console.log("[DISMISS_ALERT:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] DISMISS_ALERT");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3820,7 +3773,7 @@ export function useSocket({
         setResolveAlertErrorMessage("알림 해결 처리 응답이 지연되고 있습니다.");
       }, RESOLVE_ALERT_TIMEOUT_MS);
 
-      console.log("[RESOLVE_ALERT:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] RESOLVE_ALERT");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3893,7 +3846,7 @@ export function useSocket({
         setUpdateAlertErrorMessage("알림 수정 응답이 지연되고 있습니다.");
       }, UPDATE_ALERT_TIMEOUT_MS);
 
-      console.log("[UPDATE_ALERT:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] UPDATE_ALERT");
       sendSocketMessage(socketRef.current, message);
     },
@@ -3953,7 +3906,7 @@ export function useSocket({
         setDeleteAlertErrorMessage("알림 삭제 응답이 지연되고 있습니다.");
       }, DELETE_ALERT_TIMEOUT_MS);
 
-      console.log("[DELETE_ALERT:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] DELETE_ALERT");
       sendSocketMessage(socketRef.current, message);
     },
@@ -4015,7 +3968,7 @@ export function useSocket({
         meetingRoomId: finalPayload.meetingRoomId,
       };
       isUpdateIssuePendingRef.current = true;
-      console.log("[UPDATE_ISSUE:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] UPDATE_ISSUE");
 
       sendSocketMessage(socketRef.current, message);
@@ -4073,7 +4026,7 @@ export function useSocket({
         meetingRoomId: finalPayload.meetingRoomId,
       };
       isUpdateIssuePendingRef.current = true;
-      console.log("[CHANGE_ISSUE_STATE:BEFORE_SEND]", finalPayload);
+
       console.log("[SEND] CHANGE_ISSUE_STATE");
 
       sendSocketMessage(socketRef.current, message);
