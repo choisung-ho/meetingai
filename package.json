@@ -1,0 +1,20 @@
+{
+  "name": "meeting-ai-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI 회의 보조 데스크톱 앱 - FastAPI(backend) + Node WebSocket(realtime-server) + React/Electron(frontend) 통합본",
+  "scripts": {
+    "install:all": "npm --prefix realtime-server install && npm --prefix frontend install",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "dev:backend": "cd backend && python3 -m uvicorn app.main:app --reload --port 8000",
+    "dev:realtime": "npm --prefix realtime-server run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev": "node scripts/dev.mjs",
+    "build:frontend": "npm --prefix frontend run build",
+    "typecheck:frontend": "npm --prefix frontend exec -- tsc -p frontend/tsconfig.app.json --noEmit --incremental false",
+    "typecheck:realtime": "npm --prefix realtime-server run typecheck",
+    "test:backend": "cd backend && python3 -m unittest discover -s tests",
+    "verify:release": "./scripts/verify-release.sh"
+  }
+}

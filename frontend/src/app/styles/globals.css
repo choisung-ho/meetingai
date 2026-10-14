@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+html, body, #root {
+  /* 화면이 컨텐츠보다 작을 때만 늘어나도록 min-height로 변경하고, 세로 스크롤을 허용합니다. */
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden; 
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 전체 화면용 브라우저 스크롤바 디자인 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(165, 180, 252, 0.5); /* indigo-300 반투명 */
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(129, 140, 248, 0.8); /* indigo-400 */
+}

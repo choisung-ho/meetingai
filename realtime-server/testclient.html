@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>WebSocket MeetingRoom Test Client</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f7f8fa;
+      color: #222;
+    }
+
+    h1 {
+      font-size: 22px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 9px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 10px 14px;
+      margin: 6px 4px 6px 0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #0ea5a4;
+      color: white;
+      font-weight: bold;
+    }
+
+    button.secondary {
+      background: #64748b;
+    }
+
+    button.danger {
+      background: #ef4444;
+    }
+
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    #status {
+      font-weight: bold;
+      color: #ef4444;
+    }
+
+    #status.connected {
+      color: #0ea5a4;
+    }
+
+    pre {
+      background: #111827;
+      color: #d1d5db;
+      padding: 14px;
+      border-radius: 8px;
+      height: 360px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>MeetingRoom WebSocket 테스트 클라이언트</h1>
+
+  <div class="card">
+    <p>연결 상태: <span id="status">DISCONNECTED</span></p>
+
+    <label>WebSocket URL</label>
+    <input id="wsUrl" value="ws://localhost:8080" />
+
+    <button onclick="connectSocket()">WebSocket 연결</button>
+    <button class="danger" onclick="disconnectSocket()">연결 종료</button>
+  </div>
+
+  <div class="card">
+    <h3>테스트 값</h3>
+
+    <label>User ID</label>
+    <input id="userId" value="user-001" />
+
+    <label>Name</label>
+    <input id="name" value="고라니" />
+
+    <label>Workspace ID</label>
+    <input id="workspaceId" value="2222" />
+
+    <label>Meeting ID</label>
+    <input id="meetingId" value="1" />
+
+    <label>Meeting Room ID</label>
+    <input id="meetingRoomId" value="meeting-room-1" />
+  </div>
+
+  <div class="card">
+    <h3>요청 전송</h3>
+
+    <button onclick="sendConnectUser()">1. CONNECT_USER</button>
+    <button onclick="sendJoinWorkspace()">2. JOIN_WORKSPACE</button>
+    <button onclick="sendJoinMeetingRoom()">3. JOIN_MEETING_ROOM</button>
+    <button onclick="sendLeaveMeetingRoom()">4. LEAVE_MEETING_ROOM</button>
+    <button onclick="sendPing()" class="secondary">PING</button>
+    <button onclick="clearLog()" class="secondary">로그 지우기</button>
+  </div>
+
+  <div class="card">
+    <h3>직접 JSON 전송</h3>
+    <textarea id="customJson" style="width:100%; height:160px; box-sizing:border-box;"></textarea>
+    <br />
+    <button onclick="sendCustomJson()">직접 전송</button>
+  </div>
+
+  <div class="card">
+    <h3>로그</h3>
+    <pre id="log"></pre>
+  </div>
+
+  <script>
+    let ws = null;
+
+    function getValue(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function getMeetingId() {
+      return Number(getValue("meetingId"));
+    }
+
+    function makeRequestId(prefix) {
+      return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function log(title, data) {
+      const logBox = document.getElementById("log");
+      const time = new Date().toLocaleTimeString();
+
+      let text = `[${time}] ${title}\n`;
+
+      if (typeof data === "string") {
+        text += data;
+      } else {
+        text += JSON.stringify(data, null, 2);
+      }
+
+      logBox.textContent += text + "\n\n";
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function setStatus(connected) {
+      const status = document.getElementById("status");
+
+      if (connected) {
+        status.textContent = "CONNECTED";
+        status.classList.add("connected");
+      } else {
+        status.textContent = "DISCONNECTED";
+        status.classList.remove("connected");
+      }
+    }
+
+    function connectSocket() {
+      const url = getValue("wsUrl");
+
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        log("이미 연결됨", url);
+        return;
+      }
+
+      ws = new WebSocket(url);
+
+      ws.onopen = () => {
+        setStatus(true);
+        log("WebSocket 연결 성공", url);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const parsed = JSON.parse(event.data);
+          log("서버 → 클라이언트", parsed);
+        } catch (error) {
+          log("서버 → 클라이언트 RAW", event.data);
+        }
+      };
+
+      ws.onerror = (error) => {
+        log("WebSocket 에러", error.message || error);
+      };
+
+      ws.onclose = () => {
+        setStatus(false);
+        log("WebSocket 연결 종료", "close");
+      };
+    }
+
+    function disconnectSocket() {
+      if (!ws) {
+        log("연결 없음", "WebSocket 객체가 없습니다.");
+        return;
+      }
+
+      ws.close();
+    }
+
+    function sendMessage(message) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        log("전송 실패", "WebSocket이 연결되어 있지 않습니다.");
+        return;
+      }
+
+      ws.send(JSON.stringify(message));
+      log("클라이언트 → 서버", message);
+    }
+
+    function sendConnectUser() {
+      const message = {
+        type: "CONNECT_USER",
+        requestId: makeRequestId("connect-user"),
+        payload: {
+          userId: getValue("userId"),
+          name: getValue("name")
+        }
+      };
+
+      sendMessage(message);
+    }
+
+    function sendJoinWorkspace() {
+      const message = {
+        type: "JOIN_WORKSPACE",
+        requestId: makeRequestId("join-workspace"),
+        payload: {
+          workspaceId: getValue("workspaceId"),
+          userId: getValue("userId")
+        }
+      };
+
+      sendMessage(message);
+    }
+
+    function sendJoinMeetingRoom() {
+      const message = {
+        type: "JOIN_MEETING_ROOM",
+        requestId: makeRequestId("join-meeting-room"),
+        payload: {
+          workspaceId: getValue("workspaceId"),
+          meetingId: getMeetingId(),
+          meetingRoomId: getValue("meetingRoomId"),
+          userId: getValue("userId")
+        }
+      };
+
+      sendMessage(message);
+    }
+
+    function sendLeaveMeetingRoom() {
+      const message = {
+        type: "LEAVE_MEETING_ROOM",
+        requestId: makeRequestId("leave-meeting-room"),
+        payload: {
+          workspaceId: getValue("workspaceId"),
+          meetingId: getMeetingId(),
+          meetingRoomId: getValue("meetingRoomId"),
+          userId: getValue("userId")
+        }
+      };
+
+      sendMessage(message);
+    }
+
+    function sendPing() {
+      const message = {
+        type: "PING",
+        requestId: makeRequestId("ping"),
+        payload: {
+          userId: getValue("userId")
+        }
+      };
+
+      sendMessage(message);
+    }
+
+    function sendCustomJson() {
+      const raw = document.getElementById("customJson").value;
+
+      try {
+        const message = JSON.parse(raw);
+        sendMessage(message);
+      } catch (error) {
+        log("JSON 파싱 실패", error.message);
+      }
+    }
+
+    function clearLog() {
+      document.getElementById("log").textContent = "";
+    }
+
+    document.getElementById("customJson").value = JSON.stringify({
+      type: "JOIN_MEETING_ROOM",
+      requestId: "join-meeting-room-test-001",
+      payload: {
+        workspaceId: "2222",
+        meetingId: 1,
+        meetingRoomId: "meeting-room-1",
+        userId: "user-001"
+      }
+    }, null, 2);
+  </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+# 통합 앱 인프라
+#
+# container_name을 지정하지 않는다.
+# 고정 이름을 쓰면 다른 폴더의 compose가 만든 같은 이름의 컨테이너와 충돌해
+# "container name is already in use" 오류가 난다.
+# 이름을 비워두면 Compose가 프로젝트 단위(meetingai-app-postgres-1)로 관리한다.
+#
+# 포트가 이미 사용 중이면 .env 또는 환경변수로 바꿀 수 있다.
+#   POSTGRES_PORT=5434 docker compose up -d
+
+name: meetingai-app
+
+services:
+  # 로컬에 PostgreSQL이 없는 팀원용 DB.
+  # 이미 자신의 PostgreSQL을 쓰고 있다면 backend/.env의 DATABASE_URL을 그쪽으로 두면 되고,
+  # 이 컨테이너는 그대로 두어도 무방하다.
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
+      POSTGRES_DB: meeting_ai_db
+    ports:
+      # 데스크톱 설치본의 DB는 로컬 FastAPI만 사용한다. 모든 인터페이스에
+      # 공개하면 같은 네트워크의 다른 장치에서 개발 비밀번호로 접근할 수 있다.
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # 실시간 서버와 FastAPI가 공유하는 Redis (필수)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      # Redis 역시 외부 네트워크에 노출하지 않는다.
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:

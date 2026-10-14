@@ -1,0 +1,20 @@
+{
+  "name": "realtime-backend",
+  "version": "2.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/mainServer.js",
+    "dev": "node server/mainServer.js",
+    "start:cluster": "CLUSTER_MODE=true node server/mainServer.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "jsonwebtoken": "^9.0.3",
+    "redis": "^4.7.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
